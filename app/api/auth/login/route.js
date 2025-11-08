@@ -1,5 +1,6 @@
 import { generateToken } from '../../../../utils/auth.js';
 import { prisma } from '../../../../lib/prisma.js';
+import bcrypt from 'bcryptjs';
 
 /**
  * POST /api/auth/login
@@ -32,8 +33,10 @@ export async function POST(request) {
       );
     }
 
-    // Password ko check karo
-    if (user.password !== password) {
+    // Password ko check karo - bcrypt se compare karo
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordValid) {
       return Response.json(
         { success: false, error: 'Email ya password galat hai' },
         { status: 401 }

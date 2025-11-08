@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authenticateRequest, hasRole } from '../../../utils/auth.js';
 import { prisma } from '../../../lib/prisma.js';
+import bcrypt from 'bcryptjs';
 
 /**
  * GET /api/users
@@ -157,12 +158,15 @@ export async function POST(request) {
       );
     }
 
+    // Password ko hash karo (10 rounds of salting)
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Database mein naya user create karo
     const newUser = await prisma.user.create({
       data: {
         name: name,
         email: email,
-        password: password, // Production mein hash karna hai
+        password: hashedPassword, // Hashed password save hoga
         role: role,
         department: department || null,
       },
